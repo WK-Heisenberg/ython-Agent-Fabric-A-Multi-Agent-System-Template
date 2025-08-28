@@ -1,0 +1,18 @@
+{
+    "capabilities": [
+        {
+            "id": "get_transaction_details",
+            "name": "Get Transaction Details",
+            "description": "Retrieve details for a specific transaction ID.",
+            "openapi_url": "/.well-known/a2a/openapi.yaml",
+            "openapi_operation_id": "get_transaction_details_get"
+        },
+        {
+            "id": "query_bigquery",
+            "name": "Query Transactions (Simulated BigQuery)",
+            "description": "Run a query against transaction data (simulated).",
+            "openapi_url": "/.well-known/a2a/openapi.yaml",
+            "openapi_operation_id": "query_bigquery_post"
+        }
+    ]
+}

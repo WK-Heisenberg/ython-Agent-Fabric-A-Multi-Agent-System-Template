@@ -1,0 +1,17 @@
+steps:
+  - name: 'python:3.10-slim'
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        pip install --no-cache-dir -r requirements.txt && \
+        export PROXY_URL="${_PROXY_URL}" && \
+        # IMPORTANT: This sample build does NOT include authentication. Modify if needed.
+        echo "Running orchestrator with PROXY_URL=${PROXY_URL} TX_ID=${_TX_ID} REASON='${_REASON}'" && \
+        python app/main.py --txid "${_TX_ID}" --reason "${_REASON}"
+
+substitutions:
+  _PROXY_URL: '' # To be provided at build time
+  _TX_ID: 'TX12345'
+  _REASON: 'Default dispute from Cloud Build'
+timeout: '600s'

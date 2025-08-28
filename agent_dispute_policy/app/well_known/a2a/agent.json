@@ -1,0 +1,10 @@
+{
+    "id": "Dispute_Policy_Agent",
+    "name": "Dispute Policy Agent",
+    "description": "Checks transaction disputes against company policy.",
+    "a2a_version": "0.1",
+    "base_url": null,
+    "capabilities_url": "/.well-known/a2a/capabilities.json",
+    "status": "active",
+    "security_schemes": []
+}

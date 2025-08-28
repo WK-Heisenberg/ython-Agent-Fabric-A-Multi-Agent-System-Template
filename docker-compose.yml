@@ -1,0 +1,94 @@
+networks:
+  a2a-net:
+    driver: bridge
+
+services:
+  agent_transaction_detail:
+    build: ./agent_transaction_detail
+    container_name: agent_transaction_detail
+    environment:
+      - PORT=8001
+    ports:
+      - "8001:8001"
+    networks:
+      - a2a-net
+    healthcheck:
+      # Using shell form, 127.0.0.1, and adjusted timings
+      test: curl -f http://127.0.0.1:8001/healthz || exit 1
+      interval: 15s
+      timeout: 10s    # Timeout for the curl command itself
+      retries: 5
+      start_period: 30s # Grace period before first check counts
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+
+  agent_dispute_policy:
+    build: ./agent_dispute_policy
+    container_name: agent_dispute_policy
+    environment:
+      - PORT=8002
+    ports:
+      - "8002:8002"
+    networks:
+      - a2a-net
+    healthcheck:
+      # Using shell form, 127.0.0.1, and adjusted timings
+      test: curl -f http://127.0.0.1:8002/healthz || exit 1
+      interval: 15s
+      timeout: 10s    # Timeout for the curl command itself
+      retries: 5
+      start_period: 30s # Grace period before first check counts
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8002
+
+  proxy_server:
+    build: ./proxy_server
+    container_name: proxy_server
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - AGENT_URLS=http://agent_transaction_detail:8001,http://agent_dispute_policy:8002
+      # Optional: Add logging level if needed
+      # - LOG_LEVEL=INFO
+    depends_on:
+      agent_transaction_detail:
+        condition: service_healthy # Wait for agent healthcheck
+      agent_dispute_policy:
+        condition: service_healthy # Wait for agent healthcheck
+    networks:
+      - a2a-net
+    # Use a healthcheck to ensure the service is ready before dependents start
+    healthcheck:
+      # Ensure this path matches your actual health endpoint
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s # Optional: Give the service time to start before first check
+    # Removed --reload for stability in testing/non-dev environments
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  orchestrator:
+    build: ./orchestrator
+    container_name: orchestrator
+    environment:
+      - PROXY_URL=http://proxy_server:8000
+      - TEST_TX_ID=TX67890 # Default TX ID if no args provided
+      - TEST_REASON=Product not as described. # Default reason if no args provided
+      # Optional: Add logging level if needed
+      # - LOG_LEVEL=INFO
+    depends_on:
+      proxy_server:
+        condition: service_healthy # Wait for proxy healthcheck
+    networks:
+      - a2a-net
+    # Updated command to wait using healthcheck, removed sleep
+    # Runs the python script with default args, then specific args, then exits.
+    # If you want it to stay running, adjust the command (e.g., add 'sleep infinity' at the end if needed for inspection)
+    command: >
+      sh -c "echo 'Orchestrator waiting for proxy...' && # Healthcheck handles waiting now
+             echo 'Running orchestrator for default TX (from ENV)...' &&
+             python app/main.py &&
+             echo 'Running orchestrator for TX11223...' &&
+             python app/main.py --txid TX11223 --reason 'Unauthorized' &&
+             echo 'Orchestrator runs finished.'"
+             # Removed 'sleep infinity' as the task seems finite. Add back if needed.

@@ -1,0 +1,90 @@
+# agent_dispute_policy/app/well_known/a2a/openapi.yaml
+openapi: 3.0.0
+info:
+  title: Dispute Policy Agent API
+  version: 0.1.0
+paths:
+  /check_dispute_policy:
+    post:
+      summary: Check Dispute Policy
+      operationId: check_dispute_policy_post
+      tags:
+        - A2ACapabilities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisputePolicyCheckRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisputePolicyCheckResponse'
+components:
+  schemas:
+    TransactionDetails:
+      type: object
+      required:
+        - transaction_id
+        - amount
+        - merchant
+        - timestamp
+      properties:
+        transaction_id:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: USD
+        merchant:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          default: completed
+    DisputePolicyCheckRequest:
+      type: object
+      required:
+        - transaction
+        - reason
+      properties:
+        transaction:
+          $ref: '#/components/schemas/TransactionDetails'
+        reason:
+          type: string
+          example: "Product not received"
+        customer_notes:
+          type: string
+          nullable: true
+    DisputePolicyCheckResponse:
+      type: object
+      required:
+        - dispute_id
+        - transaction_id
+        - policy_decision
+        - reasoning
+      properties:
+        dispute_id:
+          type: string
+        transaction_id:
+          type: string
+        policy_decision:
+          type: string
+          description: "The decision based on the policy check."
+          enum:
+            - Approved
+            - Rejected
+            - NeedsReview
+          example: Approved
+        reasoning:
+          type: string
+        next_steps:
+          type: string
+          nullable: true

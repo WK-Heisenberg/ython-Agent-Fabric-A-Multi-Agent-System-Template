@@ -1,0 +1,101 @@
+# agent_transaction_detail/app/well_known/a2a/openapi.yaml
+openapi: 3.0.0
+info:
+  title: Transaction Detail Agent API
+  version: 0.1.0
+paths:
+  /get_transaction_details:
+    get:
+      summary: Get Transaction Details
+      operationId: get_transaction_details_get
+      tags:
+        - A2ACapabilities
+      parameters:
+        - name: transaction_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The ID of the transaction to retrieve.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDetails'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: Transaction not found
+  /query_bigquery:
+    post:
+      summary: Query Transactions (Simulated BigQuery)
+      operationId: query_bigquery_post
+      tags:
+        - A2ACapabilities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BigQueryRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BigQueryResponse'
+components:
+  schemas:
+    TransactionDetails:
+      type: object
+      required:
+        - transaction_id
+        - amount
+        - merchant
+        - timestamp
+      properties:
+        transaction_id:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: USD
+        merchant:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+          default: completed
+    BigQueryRequest:
+      type: object
+      required:
+        - sql_query
+      properties:
+        sql_query:
+          type: string
+          example: "SELECT * FROM transactions WHERE amount > 100 LIMIT 10"
+    BigQueryResponse:
+      type: object
+      required:
+        - row_count
+        - results
+      properties:
+        row_count:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object

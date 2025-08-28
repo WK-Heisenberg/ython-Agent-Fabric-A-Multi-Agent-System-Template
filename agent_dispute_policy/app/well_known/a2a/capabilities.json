@@ -1,0 +1,11 @@
+{
+    "capabilities": [
+        {
+            "id": "check_dispute_policy",
+            "name": "Check Dispute Policy",
+            "description": "Checks if a dispute is valid according to company policy.",
+            "openapi_url": "/.well-known/a2a/openapi.yaml",
+            "openapi_operation_id": "check_dispute_policy_post"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "id": "Transaction_Detail_Agent",
+    "name": "Transaction Detail Agent",
+    "description": "Provides transaction details from mock data or simulated BigQuery.",
+    "a2a_version": "0.1",
+    "base_url": null,
+    "capabilities_url": "/.well-known/a2a/capabilities.json",
+    "status": "active",
+    "security_schemes": []
+}
