@@ -24,14 +24,45 @@ While the use case is a simulation, the underlying architectural framework—the
 The system is composed of four main, decoupled services that communicate over the network.
 
 ```text
-+-------------+      2. Discover()      +--------------+      Polls      +-----------------+
-|             | ----------------------> |              | --------------> |                 |
-| Orchestrator|                         | Proxy Server |                 | Specialized     |
-|             | <---------------------- |              | <-------------- |      Agent      |
-+-------------+   3. Agent URLs & Caps  +--------------+   (agent.json)  | (e.g. Tx, Policy)|
-      |                                                                  +-----------------+
-      | 4. Call Agent Capability (e.g. get_details)
-      +----------------------------------------------------------------------------------->
++----------+
+|   User   |
++----------+
+     |
+     | (Initiate Dispute: Tx ID, Reason)
+     v
++--------------+      (1. Discover Agents)      +--------------+
+|              | -----------------------------> |              |
+| Orchestrator |                              | Proxy Server |
+|              | <----------------------------- |              |
++--------------+      (2. Active Agent List)    +--------------+
+     |
+     | (If Agents Found)
+     |
+     v
++--------------+   (3. Get Tx Details / Query)  +--------------------------+
+|              | -----------------------------> |                          |
+| Orchestrator |                              | Transaction Detail Agent |
+|              | <----------------------------- |                          |
++--------------+   (4. Tx Details / Results)    +--------------------------+
+     |
+     | (If Tx Details Acquired)
+     |
+     v
++--------------+     (5. Check Policy)        +-----------------------+
+|              | -----------------------------> |                       |
+| Orchestrator |                              | Dispute Policy Agent  |
+|              | <----------------------------- |                       |
++--------------+     (6. Policy Decision)     +-----------------------+
+     |
+     | (Report Outcome)
+     v
++----------+
+|   User   |
++----------+
+     |
+     | (7. Final Dispute Outcome / Error)
+     v
+   (End)
 ```
 
 1.  Client initiates a task (e.g., a dispute).
